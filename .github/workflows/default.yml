@@ -1,0 +1,40 @@
+name: XCPlite Default
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["**"]
+    tags: ["**"]
+
+concurrency:
+  group: ${{ (github.ref == 'refs/heads/master') && 'master' || format('{0}-{1}', github.workflow, github.ref) }} # concurrency does not include master branch
+  cancel-in-progress: true
+
+jobs:
+  #####################################################################################################################
+  #                                                                                                                   #
+  #   All in one                                                                                     #
+  #                                                                                                                   #
+  #####################################################################################################################
+  All_in_one:
+    runs-on: [macos-13]
+    name: All in one
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install Build Tools
+        run: brew install cmake gcc
+      
+      - name: Build XCPlite
+        run: |
+          cd C_Demo
+          make -DCMAKE_BUILD_TYPE=Release -S . -B build  
+          cd build
+          make
+      - name: Provide Build Artifacts (C_Demo)
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: C_Demo build artifacts
+          path: ./C_Demo/build/*.*

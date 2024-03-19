@@ -13,28 +13,59 @@ concurrency:
 jobs:
   #####################################################################################################################
   #                                                                                                                   #
-  #   All in one                                                                                     #
+  #   Build on Linux                                                                                                   #
   #                                                                                                                   #
   #####################################################################################################################
-  All_in_one:
-    runs-on: [macos-13]
-    name: All in one
+  build_on_linux:
+    runs-on: [ubuntu-22.04]
+    name: Build on Linux
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
       - name: Install Build Tools
-        run: brew install cmake gcc
+        run: |
+          sudo apt-get install cmake g++ clang ninja-build
       
       - name: Build XCPlite
         run: |
           cd C_Demo
-          make -DCMAKE_BUILD_TYPE=Release -S . -B build  
+          cmake -DCMAKE_BUILD_TYPE=Release -S . -B build
           cd build
           make
-      - name: Provide Build Artifacts (C_Demo)
+      - name: C_Demo - Provide Build Artifacts (Linux)
         uses: actions/upload-artifact@v3
         if: always()
         with:
-          name: C_Demo build artifacts
+          name: C_Demo build artifacts (Linux)
+          path: ./C_Demo/build/*.*
+
+
+  #####################################################################################################################
+  #                                                                                                                   #
+  #   Build on Mac                                                                                                   #
+  #                                                                                                                   #
+  #####################################################################################################################
+  build_on_mac:
+    runs-on: [macos-13]
+    name: Build on Mac
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install Build Tools
+        run:
+          brew install cmake gcc
+      
+      - name: Build XCPlite
+        run: |
+          cd C_Demo
+          cmake -DCMAKE_BUILD_TYPE=Release -S . -B build  
+          cd build
+          make
+      - name: C_Demo - Provide Build Artifacts (MacOS)
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: C_Demo build artifacts (MacOS)
           path: ./C_Demo/build/*.*
